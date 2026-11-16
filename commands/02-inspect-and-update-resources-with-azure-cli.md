@@ -1,6 +1,6 @@
 # Inspect and update resources with Azure CLI
 
-**Short instructor activity · 6–8 minutes, excluding provisioning waits.** Start with no resources from the portal demo. Create an empty storage account, inspect it, update one tag, then remove everything created for the activity. Run the commands in either Azure Cloud Shell or a local terminal.
+Create an empty storage account, inspect it, update one tag, then remove the resources you create. You can start this exercise without the account from the portal lesson. Use Azure Cloud Shell or your local terminal.
 
 ## Sign in locally if needed
 
@@ -74,7 +74,7 @@ az storage account check-name --subscription "$subscriptionId" --name "$storageA
 az storage account create --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$storageAccount" --location "$location" --kind StorageV2 --sku Standard_LRS --access-tier Hot --https-only true --min-tls-version TLS1_2 --allow-blob-public-access false --allow-shared-key-access false --public-network-access Disabled --tags purpose=cli-activity --query "{name:name,sku:sku.name,state:provisioningState}" --output table
 ```
 
-**Expected:** one account with SKU `Standard_LRS` and provisioning state `Succeeded`. Pause the recording during provisioning. Keep the account empty, skip data uploads and avoid optional paid services. This configuration is intended to keep cost low. Actual charges depend on region, usage and any subscription-level services or policies. Check the applicable pricing and settings before creating the resource. The activity does not assume free-tier eligibility or guarantee a zero bill.
+**Expected:** one account with SKU `Standard_LRS` and provisioning state `Succeeded`. Keep the account empty, skip data uploads and avoid optional paid services. This configuration is intended to keep cost low. Actual charges depend on region, usage and any subscription-level services or policies. Check the applicable pricing and settings before creating the resource. The activity does not assume free-tier eligibility or guarantee a zero bill.
 
 [Resource group CLI commands](https://learn.microsoft.com/cli/azure/group) · [Storage account CLI commands and flags](https://learn.microsoft.com/cli/azure/storage/account) · [Storage billing factors](https://learn.microsoft.com/azure/storage/common/storage-account-overview#storage-account-billing) · [Azure Blob Storage pricing](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/)
 

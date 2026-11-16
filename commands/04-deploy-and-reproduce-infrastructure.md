@@ -4,7 +4,7 @@ Deploy the same Bicep definition twice to one resource group. Use a different pa
 
 ## Before you deploy
 
-Open a terminal at the repository root. Use the checked-in `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. Before the test deployment, make a local copy of `.infrastructure/dev.parameters.json` named `.infrastructure/reproduce.parameters.json` and set the values using the input table below. The Bicep definition uses `Microsoft.Storage/storageAccounts@2023-05-01`.
+Open a terminal at the repository root. Use the checked-in `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. Prepare the parameter files in step 1. If you're here to recreate the dev account for guide 05, use the dev inputs only. Skip the test name check and test file, and stop after step 3. The Bicep definition uses `Microsoft.Storage/storageAccounts@2023-05-01`.
 
 - Use Azure CLI with its Bicep compiler available (`az version` and `az bicep version`). For a local terminal, sign in with `az login` if necessary. In a managed workspace use its provided sign-in and group. Run one command at a time and stop after any unexpected result or error.
 - Use an approved subscription and region. Confirm the `Microsoft.Storage` provider is available and the region supports `StorageV2` with `Standard_LRS`. Confirm policy, quota for two accounts, and the ability to read/delete the accounts. Deployments and what-if normally require resource write access plus `Microsoft.Resources/deployments/*`. Creating a personal group requires subscription-level group creation access. Have the administrator resolve any inaccessible scope or provider setup.
@@ -59,7 +59,7 @@ az storage account check-name --subscription "$subscriptionId" --name "$devName"
 az storage account check-name --subscription "$subscriptionId" --name "$testName" --output json
 ```
 
-Choose two distinct available names with 3–24 lowercase letters or digits. If a managed workspace denies the subscription-level name check, confirm the account creation route is allowed and use fresh unique suffixes. Name availability can still change before creation. Edit the JSON values before proceeding. The variables above do not update the files. The checked-in dev name and region are examples. Set both parameter files to your approved values.
+Choose two distinct available names with 3–24 lowercase letters or digits. If a managed workspace denies the subscription-level name check, confirm the account creation route is allowed and use fresh unique suffixes. Name availability can still change before creation. For a two-account run, copy `.infrastructure/dev.parameters.json` to `.infrastructure/reproduce.parameters.json`. Edit and save the JSON file for every account you plan to deploy. The variables above do not update the files. The checked-in dev name and region are examples. Set both parameter files to your approved values.
 
 | JSON path under `parameters` | `.infrastructure/dev.parameters.json` | `.infrastructure/reproduce.parameters.json` |
 |---|---|---|
@@ -73,7 +73,7 @@ Choose two distinct available names with 3–24 lowercase letters or digits. If 
 ```sh
 # Validates the deployment request without applying resource changes.
 az deployment group validate --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json'
-# Previews resource changes. Confirm the expected Create or Modify before continuing.
+# Previews resource changes. Expect Create for the dev account on a fresh run.
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json' --mode Incremental
 ```
 
@@ -95,13 +95,13 @@ The deployment should report `Succeeded` and return `storageId`, `storageName` a
 Preview the same Bicep source with the second parameter file. Expect **Create** for the test account. The dev account falls outside this deployment’s declared resources and is retained under incremental mode. Apply only after reviewing the preview.
 
 ```sh
-# Previews resource changes. Confirm the expected Create or Modify before continuing.
+# Previews resource changes. Expect Create for the test account on a fresh run.
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/reproduce.parameters.json' --mode Incremental
 # Applies the definition in incremental mode. Check the provisioning state and deployment outputs.
 az deployment group create --subscription "$subscriptionId" --resource-group "$resourceGroup" --name bicep-test --template-file .infrastructure/main.bicep --parameters '@.infrastructure/reproduce.parameters.json' --mode Incremental --query "{state:properties.provisioningState,outputs:properties.outputs}" --output json
 # Reads the named account. Compare the selected fields with the prior command or intended settings.
 az storage account show --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$testName" --query "{id:id,location:location,kind:kind,sku:sku.name,tags:tags,httpsOnly:enableHttpsTrafficOnly,tls:minimumTlsVersion,anonymousBlob:allowBlobPublicAccess,sharedKey:allowSharedKeyAccess,network:publicNetworkAccess}" --output json
-# Lists accounts in scope. After cleanup, verify the removed account names are absent.
+# Lists accounts in scope. Locate the two accounts by their names.
 az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{Account:name,Region:location,Kind:kind,Sku:sku.name,Environment:tags.environment,Owner:tags.owner}" --output table
 ```
 
@@ -119,12 +119,21 @@ Compare the test deployment outputs with the test resource read, then compare bo
 
 If you are going directly into **Apply and verify a controlled update**, keep dev with `owner=course-demo`. Save `.infrastructure/dev.parameters.json` and its ID and retain the group. Once you’ve compared both accounts, delete the test account if you no longer need it. For a standalone run, delete both accounts you created. Verify each name against the IDs you recorded before confirming deletion. Skip the dev deletion if you’re continuing to the update lesson.
 
+**Remove test after comparison.**
+
 ```sh
-# Deletes the exact exercise account. Confirm the target when prompted.
 az storage account delete --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$testName"
-# Deletes the exact exercise account. Confirm the target when prompted.
+```
+
+**Remove dev if you are ending here.** Keep it for guide 05.
+
+```sh
 az storage account delete --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$devName"
-# Lists accounts in scope. After cleanup, verify the removed account names are absent.
+```
+
+**Verify the accounts you deleted are absent.** Keep the dev account visible if you are continuing to guide 05.
+
+```sh
 az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].name" --output json
 ```
 

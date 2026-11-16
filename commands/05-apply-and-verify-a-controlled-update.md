@@ -20,6 +20,6 @@ az storage account show --subscription "$subscriptionId" --resource-group "$reso
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/updated.parameters.json' --mode Incremental
 ```
 
-If you need to reset the owner for another recording, preview the original `.infrastructure/dev.parameters.json` using the same what-if command, then reapply it using the same create command with `--name arm-reset`. Read the account again and check that the same ID reports `course-demo`. Use lesson 06 for cleanup.
+If you want to repeat the update from the original owner value, preview the original `.infrastructure/dev.parameters.json` using the same what-if command, then reapply it using the same create command with `--name arm-reset`. Read the account again and check that the same ID reports `course-demo`. Use lesson 06 for cleanup.
 
 [Microsoft Learn: What-if](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if) · [Incremental mode](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-modes)

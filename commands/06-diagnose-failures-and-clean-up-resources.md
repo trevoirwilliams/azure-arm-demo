@@ -1,11 +1,11 @@
 # Diagnose failures and clean up resources
 
-Create a scratch copy of your course Bicep file called `diagnose.bicep`. Misspell one use of a declared parameter, such as `environmentName`, without changing its declaration. Keep the course source intact.
+From the repository root, copy `.infrastructure/main.bicep` to `.infrastructure/diagnose.bicep`. Misspell one use of a declared parameter, such as `environmentName`, without changing its declaration. Keep the course source intact.
 
 ```sh
 # First run: expect an undefined-name diagnostic such as BCP057 or a spelling suggestion.
-# Correct the reference and rerun: expect a successful build and a fresh diagnose.json.
-az bicep build --file diagnose.bicep --outfile diagnose.json
+# Correct the reference and rerun: expect a successful build and a fresh .infrastructure/diagnose.json.
+az bicep build --file .infrastructure/diagnose.bicep --outfile .infrastructure/diagnose.json
 ```
 
 Use `subscriptionId` and `resourceGroup` from lesson 04. Set `deploymentName` to a real deployment record, such as `bicep-dev`, `bicep-test` or `arm-update`. In Bash use `deploymentName='bicep-dev'`. In PowerShell use `$deploymentName = 'bicep-dev'`.

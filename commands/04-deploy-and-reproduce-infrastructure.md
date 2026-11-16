@@ -1,19 +1,16 @@
 # Deploy and reproduce infrastructure
 
-**Microsoft Azure for .NET Developers · Instructor demo · Narration Revision 05, slide 35**
+Deploy the same Bicep definition twice to one resource group. Use a different parameter file each time, then compare the two accounts.
 
-**Recording target: 8–10 minutes**, excluding provisioning waits. Deploy the audited storage-account definition twice to the same resource group. Compare the two accounts and leave a clear checkpoint for the controlled-update lesson.
-
-## Before recording
+## Before you deploy
 
 Open a terminal at the repository root. Use the checked-in `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. Before the test deployment, make a local copy of `.infrastructure/dev.parameters.json` named `.infrastructure/reproduce.parameters.json` and set the values using the input table below. The Bicep definition uses `Microsoft.Storage/storageAccounts@2023-05-01`.
 
 - Use Azure CLI with its Bicep compiler available (`az version` and `az bicep version`). For a local terminal, sign in with `az login` if necessary. In a managed workspace use its provided sign-in and group. Run one command at a time and stop after any unexpected result or error.
 - Use an approved subscription and region. Confirm the `Microsoft.Storage` provider is available and the region supports `StorageV2` with `Standard_LRS`. Confirm policy, quota for two accounts, and the ability to read/delete the accounts. Deployments and what-if normally require resource write access plus `Microsoft.Resources/deployments/*`. Creating a personal group requires subscription-level group creation access. Have the administrator resolve any inaccessible scope or provider setup.
 - Keep both accounts empty. This definition adds no private endpoints, data, or paid add-ons. Check the actual pricing and any subscription-level services such as Defender before provisioning. Two empty Standard LRS accounts are chosen to keep the exercise small. Charges depend on the actual subscription, region and usage.
-- Decide the end state before recording. Keep the dev account only if you are continuing to the controlled-update demo. Use the full cleanup route for an independent run.
 
-## 1. Set the target and prepare two input sets · 0:00–2:00
+## 1. Set the target and prepare two input sets
 
 Use the same variables in Bash or PowerShell. Copy only the assignment syntax for your terminal and replace the example values. Use a fresh group name for a personal run. In a managed workspace, set the group variable to the supplied name.
 
@@ -71,7 +68,7 @@ Choose two distinct available names with 3–24 lowercase letters or digits. If 
 | `environmentName.value` | `dev` | `test` |
 | `ownerLabel.value` | `course-demo` | `course-demo` |
 
-## 2. Validate and preview dev · 2:00–3:40
+## 2. Validate and preview dev
 
 ```sh
 # Validates the deployment request without applying resource changes.
@@ -82,7 +79,7 @@ az deployment group what-if --subscription "$subscriptionId" --resource-group "$
 
 The quotes keep the `@file` argument intact in Bash and PowerShell. Validation checks the deployment request. What-if predicts changes against the target without applying them. For this empty starting state the declared storage account should appear as **Create** with the dev name. A shared group may also show unrelated resources as **Ignore**. Stop on unexpected changes, deletes, or diagnostics that prevent you from confirming the intended operation. A successful preview does not guarantee the deployment will succeed.
 
-## 3. Deploy dev and verify · 3:40–5:20
+## 3. Deploy dev and verify
 
 ```sh
 # Applies the definition in incremental mode. Check the provisioning state and deployment outputs.
@@ -91,9 +88,9 @@ az deployment group create --subscription "$subscriptionId" --resource-group "$r
 az storage account show --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$devName" --query "{id:id,location:location,kind:kind,sku:sku.name,tags:tags,httpsOnly:enableHttpsTrafficOnly,tls:minimumTlsVersion,anonymousBlob:allowBlobPublicAccess,sharedKey:allowSharedKeyAccess,network:publicNetworkAccess}" --output json
 ```
 
-Pause capture while ARM provisions. The deployment should report `Succeeded` and return `storageId`, `storageName` and `deployedLocation`. Compare the returned `storageId.value` with the direct read’s `id`. Read the dev tag and check the expected settings in the table below. Keep the full ID for the deployment and cleanup record.
+The deployment should report `Succeeded` and return `storageId`, `storageName` and `deployedLocation`. Compare the returned `storageId.value` with the direct read’s `id`. Read the dev tag and check the expected settings in the table below. Keep the full ID for the deployment and cleanup record.
 
-## 4. Reproduce with the test file · 5:20–8:50
+## 4. Reproduce with the test file
 
 Preview the same Bicep source with the second parameter file. Expect **Create** for the test account. The dev account falls outside this deployment’s declared resources and is retained under incremental mode. Apply only after reviewing the preview.
 
@@ -118,9 +115,9 @@ Compare the test deployment outputs with the test resource read, then compare bo
 | Configuration | Same approved location, `StorageV2`, `Standard_LRS`, HTTPS only `true`, `TLS1_2`, anonymous blob access `false`, Shared Key `false`, public network access `Disabled`. |
 | Portal cross-check (optional) | Refresh the resource group’s **Overview** and **Deployments**. Locate both accounts and the two named deployment records. |
 
-## 5. End state and cleanup · 8:50–9:45
+## 5. End state and cleanup
 
-If you are going directly into **Apply and verify a controlled update**, keep dev with `owner=course-demo`. Save `.infrastructure/dev.parameters.json` and its ID and retain the group. After showing both accounts, you can delete test now. For a standalone run, delete both accounts you created. Verify each name against the IDs you recorded before confirming deletion. Skip the dev deletion on the handoff route.
+If you are going directly into **Apply and verify a controlled update**, keep dev with `owner=course-demo`. Save `.infrastructure/dev.parameters.json` and its ID and retain the group. Once you’ve compared both accounts, delete the test account if you no longer need it. For a standalone run, delete both accounts you created. Verify each name against the IDs you recorded before confirming deletion. Skip the dev deletion if you’re continuing to the update lesson.
 
 ```sh
 # Deletes the exact exercise account. Confirm the target when prompted.
@@ -159,9 +156,9 @@ To inspect an existing deployment record, use the appropriate name (`bicep-dev` 
 az deployment group show --subscription "$subscriptionId" --resource-group "$resourceGroup" --name bicep-dev --output json
 ```
 
-## Sources and validation
+## References
 
-Microsoft Learn references checked 16 November 2026. Regional eligibility, pricing, permissions and actual provisioning must be checked in the recording environment.
+Microsoft Learn references checked 16 November 2026.
 
 - [Deploy Bicep with Azure CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-cli), [deployment CLI commands](https://learn.microsoft.com/cli/azure/deployment/group) and [JSON parameter files](https://learn.microsoft.com/azure/azure-resource-manager/bicep/parameter-files).
 - [Bicep what-if](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if), [incremental mode](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-modes) and [deployment history](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-history).

@@ -13,11 +13,13 @@ Use `subscriptionId` and `resourceGroup` from lesson 04. Set `deploymentName` to
 ```sh
 # Read the result, correlation ID and outer error if present.
 az deployment group show --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$deploymentName" --query "{state:properties.provisioningState,correlationId:properties.correlationId,error:properties.error}" --output json
-# Read failed operations and their messages. A successful deployment normally returns [].
-az deployment operation group list --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$deploymentName" --query "[?properties.provisioningState=='Failed'].{target:properties.targetResource.id,message:properties.statusMessage}" --output json
+# List deployment operations. Look for provisioningState Failed and inspect its statusMessage.
+az deployment operation group list --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$deploymentName" --output json
 # Inventory the accounts. Compare exact IDs with the accounts you created.
 az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{name:name,id:id,purpose:tags.purpose}" --output table
 ```
+
+Use the operation details to find the affected resource and read its error. A local compiler failure occurs before deployment and has no Azure deployment record. You can practise reading the output with a successful deployment from guide 04.
 
 If the deployment record is missing, check your subscription, resource group and deployment name. If the service rejects the storage account name, correct the parameter value before retrying. For access or policy errors, read the denied action and scope in the underlying message. Inventory the group after a failed deployment before retrying.
 

@@ -1,6 +1,6 @@
 # Azure Resource Manager course commands
 
-Choose the lesson you’re following. Each guide tells you what to run and what to check before continuing.
+Choose the guide that matches what you see in the lesson. The numbers show the order of the hands-on guides.
 
 - [Create and inspect resources in the portal](01-create-and-inspect-resources-in-the-portal.md)
 - [Inspect and update resources with Azure CLI](02-inspect-and-update-resources-with-azure-cli.md)
@@ -8,6 +8,8 @@ Choose the lesson you’re following. Each guide tells you what to run and what 
 - [Deploy and reproduce infrastructure](04-deploy-and-reproduce-infrastructure.md)
 - [Apply and verify a controlled update](05-apply-and-verify-a-controlled-update.md)
 - [Diagnose failures and clean up resources](06-diagnose-failures-and-clean-up-resources.md)
+
+Guide 01 covers the storage-account portal demo. Guide 02 creates and cleans up its own CLI exercise account. Guide 03 builds files locally. Guide 04 creates the dev account used in guide 05. If you are continuing, keep the dev account and save its name, subscription, resource group and full resource ID. Guide 06 covers diagnostics and cleanup.
 
 Run commands from the repository root, the folder that contains `.infrastructure`. The checked-in inputs are `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. `.infrastructure/main.json` is compiled reference output. Lessons 04–06 explain when to make local copies for reproduction, updates, or diagnosis.
 

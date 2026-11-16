@@ -1,6 +1,10 @@
 # Apply and verify a controlled update
 
-Start with the dev account from lesson 04. If it was removed, use that lesson to deploy only dev. Reuse its shell variables and run from the repository root. Copy `.infrastructure/dev.parameters.json` to `.infrastructure/updated.parameters.json` and change only `ownerLabel.value` from `course-demo` to `platform-team`. Keep the original dev file for reset.
+Start with the dev account from [guide 04](04-deploy-and-reproduce-infrastructure.md). If you are starting here or deleted the dev account, use the dev-only route in steps 1–3 of that guide.
+
+Run from the repository root. In a fresh terminal, restore `subscriptionId`, `resourceGroup` and `devName` using the assignment syntax in guide 04. Use the values from your original deployment. Open `.infrastructure/dev.parameters.json` and confirm its storage account name and region match the deployed resource. Copy it to `.infrastructure/updated.parameters.json` and change only `parameters.ownerLabel.value` from `course-demo` to `platform-team`. Keep the dev file for reset.
+
+## Record the baseline and preview
 
 ```sh
 # Record the account ID, owner label, SKU, region and access settings before preview.
@@ -9,7 +13,9 @@ az storage account show --subscription "$subscriptionId" --resource-group "$reso
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/updated.parameters.json' --mode Incremental
 ```
 
-Stop if the preview proposes a new account, a deletion, or changes you cannot explain. After review, apply and read back the same resource.
+Confirm the baseline reports `owner=course-demo`. Stop if the preview proposes a new account, a deletion, or changes you cannot explain. The deployment reapplies the resource definition in incremental mode, so review the full preview for the existing account before applying.
+
+## Apply and verify
 
 ```sh
 # Apply the reviewed inputs and read the deployment state and returned ID.

@@ -1,15 +1,6 @@
 # Inspect and update resources with Azure CLI
 
-Create an empty storage account, inspect it, update one tag, then remove the resources you create. You can start this exercise without the account from the portal lesson. Use Azure Cloud Shell or your local terminal.
-
-## Sign in locally if needed
-
-```sh
-# Show the installed CLI version.
-az version
-# Sign in interactively and select an accessible account.
-az login
-```
+Create an empty storage account, inspect it, add one tag, then remove the resources you create. Use a fresh account name and either a dedicated CLI exercise group or your assigned workspace group. You can complete this guide independently in Azure Cloud Shell or your local terminal.
 
 ## 1. Open a terminal and select the subscription
 

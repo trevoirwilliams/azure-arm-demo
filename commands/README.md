@@ -9,6 +9,8 @@ Open the lesson you are following:
 - [Apply and verify a controlled update](05-apply-and-verify-a-controlled-update.md)
 - [Diagnose failures and clean up resources](06-diagnose-failures-and-clean-up-resources.md)
 
+Run commands from the repository root, the folder that contains `.infrastructure`. The checked-in inputs are `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. `.infrastructure/main.json` is compiled reference output. Lessons 04–06 explain when to make local copies for reproduction, updates, or diagnosis.
+
 Run commands in order within the selected route. Replace the placeholders before running any command, and check the subscription and group before a resource change. Bash and PowerShell have different variable assignments. The command blocks are shared unless labelled otherwise. Where you use an Udemy workspace, keep its supplied group and remove only the accounts you created.
 
 The command notes cover the current course demos. Bicep inputs are available from the existing repository or the lesson materials. Commands that apply or delete resources should be run only in your approved exercise environment. Expected results are documented. The archive compilation did not execute Azure commands.

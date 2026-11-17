@@ -1,6 +1,6 @@
 # Validate, preview and deploy Bicep-defined resources
 
-Lecture 24 explains the checkpoints. Lecture 25 runs steps 1–3 through the successful dev deployment and describes a second parameter file. Step 4 is optional reproduction practice. The recording runs inside `.infrastructure` with short filenames. Run these commands from the repository root and keep the `.infrastructure/` path prefixes. In PowerShell, a backtick at the end of the line continues a command. Bash uses a backslash. The one-line versions below work in either shell.
+Lecture 24 explains the checkpoints. Lecture 25 runs steps 1–3 through the successful dev deployment and describes a second parameter file. Step 4 is optional reproduction practice. Start at the repository root. Steps 2–3 enter `.infrastructure` to use the same filenames as the video. The recording uses PowerShell backticks at the end of continued lines. The one-line commands below work in PowerShell and Bash.
 
 Deploy one dev account. To practice reproduction, deploy a second account with a different set of inputs and compare the two.
 
@@ -71,11 +71,14 @@ Choose an available dev account name with 3–24 lowercase letters or digits. Fo
 
 ## 2. Validate and preview dev
 
+From the repository root, enter `.infrastructure` before running the commands shown in the video.
+
 ```sh
+cd .infrastructure
 # Validates the deployment request without applying resource changes.
-az deployment group validate --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json'
+az deployment group validate --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file main.bicep --parameters '@dev.parameters.json'
 # Previews resource changes. Confirm the expected Create or Modify before continuing.
-az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json' --mode Incremental
+az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file main.bicep --parameters '@dev.parameters.json' --mode Incremental
 ```
 
 The quotes keep the `@file` argument intact in Bash and PowerShell. Validation checks the deployment request. What-if predicts changes against the target without applying them. For this empty starting state the declared storage account should appear as **Create** with the dev name. A shared group may also show unrelated resources as **Ignore**. Stop on unexpected changes, deletes, or diagnostics that prevent you from confirming the intended operation. For an existing declared account, incremental mode reapplies the template properties. An omitted property can reset to its default. Review the full proposed change. Deployment can still fail after a successful preview.
@@ -84,12 +87,14 @@ The quotes keep the `@file` argument intact in Bash and PowerShell. Validation c
 
 ```sh
 # Applies the definition in incremental mode. Check the provisioning state and deployment outputs.
-az deployment group create --subscription "$subscriptionId" --resource-group "$resourceGroup" --name bicep-dev --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json' --mode Incremental --query "{state:properties.provisioningState,outputs:properties.outputs}" --output json
-# Reads the named account. Compare the selected fields with the prior command or intended settings.
+az deployment group create --subscription "$subscriptionId" --resource-group "$resourceGroup" --name bicep-dev --template-file main.bicep --parameters '@dev.parameters.json' --mode Incremental --query "{state:properties.provisioningState,outputs:properties.outputs}" --output json
+# Extra verification after the recorded deployment. Compare the returned fields with the deployment outputs.
 az storage account show --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$devName" --query "{id:id,location:location,kind:kind,sku:sku.name,tags:tags,httpsOnly:enableHttpsTrafficOnly,tls:minimumTlsVersion,anonymousBlob:allowBlobPublicAccess,sharedKey:allowSharedKeyAccess,network:publicNetworkAccess}" --output json
 ```
 
 The deployment should report `Succeeded` and return `storageId`, `storageName` and `deployedLocation`. Compare the returned `storageId.value` with the direct read’s `id`. Read the dev tag and check the expected settings in the table below. Keep the full ID for the deployment and cleanup record.
+
+Return to the repository root with `cd ..` before starting optional practice or opening another guide.
 
 ## 4. Optional: Reproduce with the test file
 

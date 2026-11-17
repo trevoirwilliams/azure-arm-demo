@@ -24,7 +24,8 @@ Lecture 18 compares two ways to inspect an existing storage account. Use an acco
 
 ```sh
 az account show --query "{subscription:name,subscriptionId:id,tenant:tenantId}" --output table
-az storage account show --subscription "YOUR_SUBSCRIPTION_ID" --resource-group "YOUR_GROUP" --name "YOUR_ACCOUNT" --query "{id:id,location:location,state:provisioningState}" --output json
+az account set --subscription "YOUR_SUBSCRIPTION_ID"
+az storage account show --name "YOUR_ACCOUNT" --resource-group "YOUR_GROUP" --output json
 ```
 
 **Azure PowerShell** (use a terminal with Az.Accounts and Az.Storage, and run `Connect-AzAccount` locally if needed)
@@ -32,9 +33,9 @@ az storage account show --subscription "YOUR_SUBSCRIPTION_ID" --resource-group "
 ```powershell
 Set-AzContext -Subscription "YOUR_SUBSCRIPTION_ID" -ErrorAction Stop
 Get-AzContext
-Get-AzStorageAccount -ResourceGroupName "YOUR_GROUP" -Name "YOUR_ACCOUNT" | Select-Object Id, Location, ProvisioningState
+Get-AzStorageAccount -Name "YOUR_ACCOUNT" -ResourceGroupName "YOUR_GROUP" | Select-Object Location
 ```
 
-Check the subscription and tenant before reading the resource. Both commands should return the same resource ID and location. For the deployment exercise in Lecture 25, use the `az deployment group` examples even when your terminal is PowerShell.
+Check the subscription and tenant before reading the resource. The Azure CLI example returns the account as JSON. Compare its `location` with the location selected by the Azure PowerShell pipeline. For the deployment exercise in Lecture 25, use the `az deployment group` examples even when your terminal is PowerShell.
 
 [Azure CLI and Azure PowerShell comparison](https://learn.microsoft.com/azure/developer/azure-cli/choose-the-right-azure-command-line-tool) · [Get-AzStorageAccount](https://learn.microsoft.com/powershell/module/az.storage/get-azstorageaccount) · [Deploy an ARM template using Azure PowerShell](https://learn.microsoft.com/azure/azure-resource-manager/templates/deploy-powershell)

@@ -14,6 +14,8 @@ az login
 az account show --query "{subscription:name,subscriptionId:id,tenant:tenantId}" --output table
 ```
 
+The recording shows a sign-in warning for another tenant before subscription selection. If your intended subscription is missing, follow the [tenant sign-in instructions](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively#sign-in-with-a-different-tenant) before continuing. Both recordings use `id:id` in the query. This guide uses `subscriptionId:id` because Azure CLI hides a key named `id` in [table output](https://learn.microsoft.com/cli/azure/format-output-azure-cli#table-output-format).
+
 ## 1. Open a terminal and select the subscription
 
 - **In the portal:** Open **Cloud Shell** from the top toolbar. Choose **Bash** and, if prompted, **No storage account required**, then select the approved subscription and **Apply**. Cloud Shell signs you in using your portal identity. The subscription used for Cloud Shell requires the `Microsoft.CloudShell` provider to be registered. If registration is blocked, use the local route where permitted. Persistent mode uses an Azure Files share and can incur storage charges. Use the no-storage option for this activity or use a local terminal.
@@ -83,7 +85,7 @@ az storage account create --subscription "$subscriptionId" --resource-group "$re
 
 ## 3. Inspect the account and optionally update a tag
 
-Refresh the resource group’s **Overview** in the portal and check the account name and region, as shown in Lecture 19. The CLI read below also gives you the resource ID. For the recorded sequence, continue to deletion after the read. For extra practice, run the tag merge and read the account again.
+Refresh the portal **Dashboard** and look for the account in **All resources**, as shown in Lecture 19. You can also check the resource group’s **Overview**. Continue to step 4 to follow the recording. For extra practice, use the CLI read and tag merge below.
 
 ```sh
 # Reads the named account. Compare the selected fields with the prior command or intended settings.
@@ -110,15 +112,23 @@ Use the account name, group and subscription you just inspected. Keep the intera
 ```sh
 # Deletes the exact exercise account. Confirm the target when prompted.
 az storage account delete --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$storageAccount"
-# Lists accounts in scope. After cleanup, verify the removed account names are absent.
-az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].name" --output json
+# Lists group resources. Verify the exercise account is gone. An empty group returns [].
+az resource list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{name:name,type:type}" --output json
+```
+
+Lecture 19 repeats the inventory command across lines in Bash. Run either form. Keep each backslash at the end of its line.
+
+```bash
+az resource list \
+  --subscription "$subscriptionId" \
+  --resource-group "$resourceGroup" \
+  --query "[].{name:name,type:type}" \
+  --output json
 ```
 
 Lecture 19 ends after listing the group’s resources. Keep the group if you are about to reuse it for Lecture 25. For a standalone run, delete a group you created solely for this exercise only after confirming an empty inventory. Skip the group deletion and existence check for a supplied or shared group.
 
 ```sh
-# Lists resources in the group. Require an empty result before deleting a dedicated demo group.
-az resource list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{name:name,type:type}" --output json
 # Deletes the dedicated group. Verify absence with az group exists.
 az group delete --subscription "$subscriptionId" --name "$resourceGroup"
 # Returns true if the named group exists, otherwise false.

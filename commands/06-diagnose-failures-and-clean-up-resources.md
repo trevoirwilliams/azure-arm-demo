@@ -8,7 +8,7 @@ From the repository root, copy `.infrastructure/main.bicep` to `.infrastructure/
 az bicep build --file .infrastructure/diagnose.bicep --outfile .infrastructure/diagnose.json
 ```
 
-Use `subscriptionId` and `resourceGroup` from lesson 04. Set `deploymentName` to a real deployment record, such as `bicep-dev`, `bicep-test` or `arm-update`. In Bash use `deploymentName='bicep-dev'`. In PowerShell use `$deploymentName = 'bicep-dev'`.
+Use `subscriptionId` and `resourceGroup` from the [deployment guide](04-deploy-and-reproduce-infrastructure.md). Set `deploymentName` to a real deployment record, such as `bicep-dev`, `bicep-test` or `arm-update`. In Bash use `deploymentName='bicep-dev'`. In PowerShell use `$deploymentName = 'bicep-dev'`.
 
 ```sh
 # Read the result, correlation ID and outer error if present.
@@ -16,7 +16,7 @@ az deployment group show --subscription "$subscriptionId" --resource-group "$res
 # Read failed operations and their messages. A successful deployment normally returns [].
 az deployment operation group list --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$deploymentName" --query "[?properties.provisioningState=='Failed'].{target:properties.targetResource.id,message:properties.statusMessage}" --output json
 # Inventory the accounts. Compare exact IDs with the accounts you created.
-az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{name:name,id:id,purpose:tags.purpose}" --output table
+az storage account list --subscription "$subscriptionId" --resource-group "$resourceGroup" --query "[].{name:name,resourceId:id,purpose:tags.purpose}" --output table
 ```
 
 If the deployment record is missing, check your subscription, resource group and deployment name. If the service rejects the storage account name, correct the parameter value before retrying. For access or policy errors, read the denied action and scope in the underlying message. Inventory the group after a failed deployment before retrying.

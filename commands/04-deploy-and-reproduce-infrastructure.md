@@ -1,10 +1,12 @@
-# Deploy and reproduce infrastructure
+# Validate, preview and deploy Bicep-defined resources
 
-Deploy the same Bicep definition twice to one resource group. Use a different parameter file each time, then compare the two accounts.
+Lecture 24 explains the checkpoints. Lecture 25 runs steps 1–3 through the successful dev deployment and describes a second parameter file. Step 4 is optional reproduction practice. The recording runs inside `.infrastructure` with short filenames. Run these commands from the repository root and keep the `.infrastructure/` path prefixes. In PowerShell, a backtick at the end of the line continues a command. Bash uses a backslash. The one-line versions below work in either shell.
+
+Deploy one dev account. To practice reproduction, deploy a second account with a different set of inputs and compare the two.
 
 ## Before you deploy
 
-Open a terminal at the repository root. Use the checked-in `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. Before the test deployment, make a local copy of `.infrastructure/dev.parameters.json` named `.infrastructure/reproduce.parameters.json` and set the values using the input table below. The Bicep definition uses `Microsoft.Storage/storageAccounts@2023-05-01`.
+Open a terminal at the repository root. Use the checked-in `.infrastructure/main.bicep` and `.infrastructure/dev.parameters.json`. If you choose to reproduce the deployment, make a local copy of `.infrastructure/dev.parameters.json` named `.infrastructure/reproduce.parameters.json` and set the values using the input table below. The Bicep definition uses `Microsoft.Storage/storageAccounts@2023-05-01`.
 
 - Use Azure CLI with its Bicep compiler available (`az version` and `az bicep version`). For a local terminal, sign in with `az login` if necessary. In a managed workspace use its provided sign-in and group. Run one command at a time and stop after any unexpected result or error.
 - Use an approved subscription and region. Confirm the `Microsoft.Storage` provider is available and the region supports `StorageV2` with `Standard_LRS`. Confirm policy, quota for two accounts, and the ability to read/delete the accounts. Deployments and what-if normally require resource write access plus `Microsoft.Resources/deployments/*`. Creating a personal group requires subscription-level group creation access. Have the administrator resolve any inaccessible scope or provider setup.
@@ -30,13 +32,13 @@ $devName = 'stbicepdev7k4m2'
 $testName = 'stbiceptest7k4m2'
 ```
 
-Use the remaining commands in either shell. Check that the returned subscription matches your intended target. On a personal run, check that the group name is unused and proceed with creation only if the existence check succeeds and prints `false`. In a managed workspace skip those two commands and use the supplied group.
+Use the remaining commands in either shell. Check that the returned subscription matches your intended target. Reuse your dedicated Lecture 19 group if it still exists and you have verified its scope and inventory. For a new personal group, choose an unused name and create it only after the existence check succeeds and prints `false`. In a managed workspace skip the personal group commands and use the supplied group.
 
 ```sh
 # Selects the subscription for this CLI session.
 az account set --subscription "$subscriptionId"
 # Displays the selected subscription and tenant; confirm both before writes.
-az account show --query "{name:name,id:id,tenant:tenantId}" --output table
+az account show --query "{name:name,subscriptionId:id,tenant:tenantId}" --output table
 ```
 
 Personal run only:
@@ -55,11 +57,10 @@ Both routes:
 az group show --subscription "$subscriptionId" --name "$resourceGroup" --query "{name:name,id:id,location:location}" --output json
 # Checks availability. Look for nameAvailable: true.
 az storage account check-name --subscription "$subscriptionId" --name "$devName" --output json
-# Checks availability. Look for nameAvailable: true.
-az storage account check-name --subscription "$subscriptionId" --name "$testName" --output json
+
 ```
 
-Choose two distinct available names with 3–24 lowercase letters or digits. If a managed workspace denies the subscription-level name check, confirm the account creation route is allowed and use fresh unique suffixes. Name availability can still change before creation. Edit the JSON values before proceeding. The variables above do not update the files. The checked-in dev name and region are examples. Set both parameter files to your approved values.
+Choose an available dev account name with 3–24 lowercase letters or digits. For the optional second run, choose a different name and check its availability in step 4. If a managed workspace denies the subscription-level name check, confirm the account creation route is allowed and use fresh unique suffixes. Name availability can still change before creation. Edit the JSON values before proceeding. The variables above do not update the files. The checked-in dev name and region are examples. Set the dev file to your approved values now. Prepare the reproduction file only if you plan to run step 4.
 
 | JSON path under `parameters` | `.infrastructure/dev.parameters.json` | `.infrastructure/reproduce.parameters.json` |
 |---|---|---|
@@ -77,7 +78,7 @@ az deployment group validate --subscription "$subscriptionId" --resource-group "
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/dev.parameters.json' --mode Incremental
 ```
 
-The quotes keep the `@file` argument intact in Bash and PowerShell. Validation checks the deployment request. What-if predicts changes against the target without applying them. For this empty starting state the declared storage account should appear as **Create** with the dev name. A shared group may also show unrelated resources as **Ignore**. Stop on unexpected changes, deletes, or diagnostics that prevent you from confirming the intended operation. A successful preview does not guarantee the deployment will succeed.
+The quotes keep the `@file` argument intact in Bash and PowerShell. Validation checks the deployment request. What-if predicts changes against the target without applying them. For this empty starting state the declared storage account should appear as **Create** with the dev name. A shared group may also show unrelated resources as **Ignore**. Stop on unexpected changes, deletes, or diagnostics that prevent you from confirming the intended operation. For an existing declared account, incremental mode reapplies the template properties. An omitted property can reset to its default. Review the full proposed change. Deployment can still fail after a successful preview.
 
 ## 3. Deploy dev and verify
 
@@ -90,12 +91,13 @@ az storage account show --subscription "$subscriptionId" --resource-group "$reso
 
 The deployment should report `Succeeded` and return `storageId`, `storageName` and `deployedLocation`. Compare the returned `storageId.value` with the direct read’s `id`. Read the dev tag and check the expected settings in the table below. Keep the full ID for the deployment and cleanup record.
 
-## 4. Reproduce with the test file
+## 4. Optional: Reproduce with the test file
 
-Preview the same Bicep source with the second parameter file. Expect **Create** for the test account. The dev account falls outside this deployment’s declared resources and is retained under incremental mode. Apply only after reviewing the preview.
+Ensure `.infrastructure/reproduce.parameters.json` contains the distinct test name and the approved settings from step 1. Check name availability, validate and preview using that file. Expect **Create** for the test account. The dev account falls outside this deployment’s declared resources and is retained under incremental mode. Apply only after reviewing the preview.
 
 ```sh
-# Previews resource changes. Confirm the expected Create or Modify before continuing.
+az storage account check-name --subscription "$subscriptionId" --name "$testName" --output json
+az deployment group validate --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/reproduce.parameters.json'
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/reproduce.parameters.json' --mode Incremental
 # Applies the definition in incremental mode. Check the provisioning state and deployment outputs.
 az deployment group create --subscription "$subscriptionId" --resource-group "$resourceGroup" --name bicep-test --template-file .infrastructure/main.bicep --parameters '@.infrastructure/reproduce.parameters.json' --mode Incremental --query "{state:properties.provisioningState,outputs:properties.outputs}" --output json
@@ -120,7 +122,7 @@ Compare the test deployment outputs with the test resource read, then compare bo
 If you are going directly into **Apply and verify a controlled update**, keep dev with `owner=course-demo`. Save `.infrastructure/dev.parameters.json` and its ID and retain the group. Once you’ve compared both accounts, delete the test account if you no longer need it. For a standalone run, delete both accounts you created. Verify each name against the IDs you recorded before confirming deletion. Skip the dev deletion if you’re continuing to the update lesson.
 
 ```sh
-# Deletes the exact exercise account. Confirm the target when prompted.
+# Run only if you deployed the test account in step 4.
 az storage account delete --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$testName"
 # Deletes the exact exercise account. Confirm the target when prompted.
 az storage account delete --subscription "$subscriptionId" --resource-group "$resourceGroup" --name "$devName"
@@ -158,7 +160,7 @@ az deployment group show --subscription "$subscriptionId" --resource-group "$res
 
 ## References
 
-Microsoft Learn references checked 16 November 2026.
+Microsoft Learn references checked 17 November 2026.
 
 - [Deploy Bicep with Azure CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-cli), [deployment CLI commands](https://learn.microsoft.com/cli/azure/deployment/group) and [JSON parameter files](https://learn.microsoft.com/azure/azure-resource-manager/bicep/parameter-files).
 - [Bicep what-if](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if), [incremental mode](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-modes) and [deployment history](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-history).

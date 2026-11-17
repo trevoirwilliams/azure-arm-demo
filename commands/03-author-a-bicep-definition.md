@@ -1,5 +1,7 @@
 # Author a Bicep definition
 
+Lecture 23 starts in an empty folder and builds `.infrastructure/main.json`. To follow the authoring on screen, use a separate working folder with a `.infrastructure` subfolder and use this repository as the finished reference. In this checkout, the command writes `authoring-check.json` so you can compare it with the tracked `main.json`.
+
 Open the repository in your editor and start a terminal at its root. Inspect `.infrastructure/main.bicep` for the resource group scope, four parameters, one storage account and three outputs. `.infrastructure/dev.parameters.json` supplies values for deployment. `.infrastructure/main.json` is the checked-in ARM template. Build to `.infrastructure/authoring-check.json` so you can inspect a fresh result alongside that reference.
 
 ```sh
@@ -7,6 +9,7 @@ Open the repository in your editor and start a terminal at its root. Inspect `.i
 az bicep version
 # If the managed compiler is missing, install it before building.
 az bicep install
+# If you already have the compiler and want to update it, run az bicep upgrade.
 # Compile the repository definition locally. Inspect authoring-check.json for one storage account and three outputs.
 az bicep build --file .infrastructure/main.bicep --outfile .infrastructure/authoring-check.json
 ```

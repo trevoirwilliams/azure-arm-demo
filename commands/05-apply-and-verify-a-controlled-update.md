@@ -1,6 +1,6 @@
 # Apply and verify a controlled update
 
-Start with the dev account from lesson 04. If it was removed, use that lesson to deploy only dev. Reuse its shell variables and run from the repository root. Copy `.infrastructure/dev.parameters.json` to `.infrastructure/updated.parameters.json` and change only `ownerLabel.value` from `course-demo` to `platform-team`. Keep the original dev file for reset.
+Start with the dev account from the deployment guide. If it was removed, use [steps 1–3 of that guide](04-deploy-and-reproduce-infrastructure.md) to deploy only dev. Reuse its shell variables and run from the repository root. Copy `.infrastructure/dev.parameters.json` to `.infrastructure/updated.parameters.json` and change only `ownerLabel.value` from `course-demo` to `platform-team`. Keep the original dev file for reset.
 
 ```sh
 # Record the account ID, owner label, SKU, region and access settings before preview.
@@ -20,6 +20,6 @@ az storage account show --subscription "$subscriptionId" --resource-group "$reso
 az deployment group what-if --subscription "$subscriptionId" --resource-group "$resourceGroup" --template-file .infrastructure/main.bicep --parameters '@.infrastructure/updated.parameters.json' --mode Incremental
 ```
 
-If you want to repeat the update from the original owner value, preview the original `.infrastructure/dev.parameters.json` using the same what-if command, then reapply it using the same create command with `--name arm-reset`. Read the account again and check that the same ID reports `course-demo`. Use lesson 06 for cleanup.
+If you want to repeat the update from the original owner value, preview the original `.infrastructure/dev.parameters.json` using the same what-if command, then reapply it using the same create command with `--name arm-reset`. Read the account again and check that the same ID reports `course-demo`. Use the [cleanup guide](06-diagnose-failures-and-clean-up-resources.md) when finished.
 
 [Microsoft Learn: What-if](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if) · [Incremental mode](https://learn.microsoft.com/azure/azure-resource-manager/templates/deployment-modes)
